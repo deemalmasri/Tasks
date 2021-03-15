@@ -1,0 +1,105 @@
+part 1:
+note that this should be implemented on the second disk
+# pvcreate /dev/sda7 /dev/sda8 
+# vgcreate -s 16M vg1 /dev/sda7 /dev/sda8 
+# lvcreate -l 50 -n lvm02
+ # mkfs.ext4 /dev/vg1/lvm02
+ # blkid /dev/vg1/lv1
+ # vim /etc/fstab
+ # mkdir -p /mnt/data UUID=xxxxxxxx /mnt/data ext4 defaults 0 0
+ # vim /etc/fstab
+ # mount –a
+ # mount
+ 
+part2 :
+groupadd traininggroup
+# useradd -u 601 -g traininggroup  -s /sbin/nologin user1 
+# passwd user1
+ redhat
+groupadd admingroup
+useradd -g admingroup  user2 or –g admin
+useradd -g admingroup  user3
+gpasswd admingroup 
+[root@localhost ~]# usermod -aG admingroup  user3
+
+Part 3: SSH 
+[user3@localhost ~]$ ssh-keygen
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/user3/.ssh/id_rsa):
+Created directory '/home/user3/.ssh'.
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /home/user3/.ssh/id_rsa.
+Your public key has been saved in /home/user3/.ssh/id_rsa.pub.
+The key fingerprint is:
+SHA256:1kkPiCO2wMIMfbrP3NM9P777TlVsqUSbzDNBHogMKnM user3@localhost.localdomain
+The key's randomart image is:
++---[RSA 2048]----+
+|..     .o . o=   |
+|+.. . .. + .= =..|
+|.oo=oEo . o  X .+|
+| ..o+o . o +. +..|
+|   ..   S o ..  .|
+|  .    .       . |
+|   + . . .    .  |
+|    + o . o ..   |
+|       .   +=*o  |
++----[SHA256]-----+
+$ ssh-copy-id user3@172.25.2.154
+ $ssh user3@172.25.2.154
+
+Part 4: permissions
+[root@localhost ~]# cp /etc/fstab /var/tmp/admin
+[root@localhost ~]# setfacl -m u:user1:rwx /var/tmp/admin
+[root@localhost ~]# setfacl -m u:user2:--- /var/tmp/admin
+
+Part 5: permissions
+cat /etc/sysconfig/selinux 
+SELINUX=enforcing
+[root@localhost ~]# sestatus
+SELinux status:                 enabled
+SELinuxfs mount:                /sys/fs/selinux
+SELinux root directory:         /etc/selinux
+Loaded policy name:             targeted
+Current mode:                   enforcing
+Mode from config file:          enforcing
+Policy MLS status:              enabled
+Policy deny_unknown status:     allowed
+Max kernel policy version:      31
+
+Part 6: bash script and processes
+ [root@localhost ~]# vi run10.sh
+#!/bin/bash
+runtime="10 minute"
+endtime=$(date -ud "$runtime" +%s)
+while [[ $(date -u +%s) -le $endtime ]]
+do
+    echo "Time Now: `date +%H:%M:%S`"
+    echo "Sleeping for 1 minute"
+    sleep 1m
+done
+[root@localhost ~]# chmod +x run10.sh
+[root@localhost ~]# ./run10.sh &
+[root@localhost ~]# ps 
+[root@localhost ~]# kill 12581
+
+Part 7: Yum Repo
+[root@localhost ~]# yum install tmux
+[root@localhost ~]# yum install httpd
+[root@localhost ~]# yum install mysql
+
+
+
+Part 8: Network management
+[root@localhost ~]# firewall-cmd --permanent --zone=public --add-port=80/tcp
+success
+[root@localhost ~]# firewall-cmd --permanent --zone=public --add-port=443/tcp
+success
+sudo ufw deny from 172.25.2.154  port 22
+
+Part 9: Cronjob
+[root@localhost ~]# crontab –e
+[root@localhost ~]# touch userlogged
+30 1 * * * last | tr -s " " > /userlogged
+
+Part 10: Mariadb  
