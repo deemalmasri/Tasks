@@ -11,25 +11,25 @@ lrwxrwxrwx. 1 root root         24 Mar 14 15:38 disklink -> /var/www/html/disku.
 -rwxr-xr-x. 1 root root        219 Mar 10 16:28 run10.sh
  
  [root@localhost ~]# vi disk.sh
-
- #!/bin/sh
-df -H > /var/www/html/disku.html
+#!/bin/sh
+du -a  | awk 'BEGIN{print "<table>"} {print "<tr>";for(i=1;i<=NF;i++)print "<td>" $i"</td>";print "</tr>"} END{print "</table>"}' > /var/www/html/disku.html
 echo " <br> <br> " >> /var/www/html/disku.html
-df -h | awk '$NF=="/"{printf "Disk Usage: %d/%dGB (%s)\n", $3,$2,$5}' >> /var/www/html/disku.html
+du -a | awk '$NF=="/"{printf "Disk Usage: %d/%dGB (%s)\n", $3,$2,$5}' >> /var/www/html/disku.html | column -t
 ~
 ~
 
 [root@localhost ~]# vi mem.sh
 #!/bin/sh
-free -m  > /var/www/html/memu.html
+free -m | awk 'BEGIN{print "<table>"} {print "<tr>";for(i=1;i<=NF;i++)print "<td>" $i"</td>";print "</tr>"} END{print "</table>"}' > /var/www/html/memu.html
 echo " <br> <br> " >> /var/www/html/memu.html
 free -m | awk 'NR==2{printf "Memory Usage: %s/%sMB (%.2f%%)\n", $3,$2,$3*100/$2 }' >> /var/www/html/memu.html
+
 ~
 ~
 
 [root@localhost ~]# vi cpu.sh
 #!/bin/sh
-top -bn1 > /var/www/html/cpuu.html
+top -bn1 | awk 'BEGIN{print "<table>"} {print "<tr>";for(i=1;i<=NF;i++)print "<td>" $i"</td>";print "</tr>"} END{print "</table>"}' > /var/www/html/cpuu.html
 echo " <br> <br> " >> /var/www/html/cpuu.html
 top -bn1 | grep load | awk '{printf "CPU Load: %.2f\n", $(NF-2)}' >> /var/www/html/cpuu.html
 ~
