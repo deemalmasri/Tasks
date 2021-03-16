@@ -87,6 +87,28 @@ Part 7: Yum Repo
 [root@localhost ~]# yum install tmux
 [root@localhost ~]# yum install httpd
 [root@localhost ~]# yum install mysql
+$sudo mkdir /media/local_repo
+$ df
+$sudo mount /dev/sr0 /tmp
+$ sudo cp -rf /tmp/* /media/local_repo
+$cd /etc/yum.repos.d/
+$ sudo rm -rf *
+ vi local.repo 
+
+[local_repo]
+
+name = Local
+
+baseurl=file:///media/local_repo
+
+gpgchek= 0
+
+enabled=1
+
+$ sudo yum makecache
+
+$sudo yum repolist
+yum install httpd
 
 
 
@@ -102,4 +124,43 @@ Part 9: Cronjob
 [root@localhost ~]# touch userlogged
 30 1 * * * last | tr -s " " > /userlogged
 
-Part 10: Mariadb  
+Part 10: Mariadb 
+[root@localhost ~]# cd /etc/yum.repos.d/
+[root@localhost yum.repos.d]# vi MariaDB.repo
+
+# MariaDB 10.5 CentOS repository list - created 2021-03-15 19:13 UTC
+# http://downloads.mariadb.org/mariadb/repositories/
+[mariadb]
+name = MariaDB
+baseurl = http://yum.mariadb.org/10.5/centos7-amd64
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+
+yum install MariaDB-server MariaDB-client
+systemctl enable mariadb
+systemctl start mariadb
+systemctl status mariadb
+mysql_secure_installation
+
+firewall-cmd --add-port=3306/tcp 
+firewall-cmd --permanent --add-port=3306/tcp
+
+
+MariaDB> create database studentdb;
+MariaDB> grant all privileges on studentdb.* TO 'user3'@'localhost' identified by 'redhat';
+ MariaDB> flush privileges;
+
+mysql -u user3 -p redhat studentdb 
+
+CREATE TABLE STUDENT (
+FIRST_NAME VARCHAR(50) NOT NULL ,
+LAST_NAME  VARCHAR(50) NOT NULL ,
+PROGRAMM  VARCHAR(50) ,
+GRAD_YEAR INT ,
+STUDENT_NUM VARCHAR(7) NOT NULL ,
+PRIMARY KEY (STUDENT_NUM )
+);
+INSERT INTO STUDENT VALUES ('Allen'),('Brown'),('mechanical'),(2017),('110-001');
+
+
+
