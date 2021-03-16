@@ -1,29 +1,32 @@
-[root@localhost ~]# ll
-total 1567564
--rw-------. 1 root root       1259 Nov 22 13:14 anaconda-ks.cfg
--rwxr-xr-x. 1 root root        187 Mar 15 12:01 cpu.sh
-lrwxrwxrwx. 1 root root         24 Mar 14 15:38 disklink -> /var/www/html/disku.html
--rwxr-xr-x. 1 root root        192 Mar 15 11:55 disk.sh
--rw-r--r--. 1 root root 1605160112 Mar 14 20:58 file1
--rw-r--r--. 1 root root        943 Mar 10 16:55 file2
--rw-r--r--. 1 root root          0 Mar 14 22:30 file3
--rwxr-xr-x. 1 root root        207 Mar 15 12:35 mem.sh
--rwxr-xr-x. 1 root root        219 Mar 10 16:28 run10.sh
+
  
- [root@localhost ~]# vi disk.sh
+ [root@localhost ~]# vi disksh.sh
 #!/bin/sh
-du -a  | awk 'BEGIN{print "<table>"} {print "<tr>";for(i=1;i<=NF;i++)print "<td>" $i"</td>";print "</tr>"} END{print "</table>"}' > /var/www/html/disku.html
-echo " <br> <br> " >> /var/www/html/disku.html
-du -a | awk '$NF=="/"{printf "Disk Usage: %d/%dGB (%s)\n", $3,$2,$5}' >> /var/www/html/disku.html | column -t
+line=" "
+line=$line$(date '+ %m/%d/%y')
+line=$line$(echo -e "\t")
+line=$line$(date +%T)
+line=$line$(echo -e "\t")
+line=$line$(df --total|grep total|tr -s ' ' | cut -d ' ' -f 3,4)
+line=$line$(echo -e "\t")
+echo "$line" | awk 'BEGIN{print "<table>"} {print "<tr>";for(i=1;i<=NF;i++)print "<td>" $i"</td>";print "</tr>"} END{print "</table>"}' >> /var/www/html/disku.html
+echo " <br>  " >> /var/www/html/disku.html
+echo $line >> /diskdata
 ~
 ~
 
-[root@localhost ~]# vi mem.sh
+[root@localhost ~]# vi memsh.sh
 #!/bin/sh
-free -m | awk 'BEGIN{print "<table>"} {print "<tr>";for(i=1;i<=NF;i++)print "<td>" $i"</td>";print "</tr>"} END{print "</table>"}' > /var/www/html/memu.html
-echo " <br> <br> " >> /var/www/html/memu.html
-free -m | awk 'NR==2{printf "Memory Usage: %s/%sMB (%.2f%%)\n", $3,$2,$3*100/$2 }' >> /var/www/html/memu.html
-
+line=" "
+line=$line$(date '+ %m/%d/%y')
+line=$line$(echo -e "\t")
+line=$line$(date +%T)
+line=$line$(echo -e "\t")
+line=$line$(free  --total|grep Total| cut -f 2,3 -d:)
+line=$line$(echo -e "\t")
+echo "$line" | awk 'BEGIN{print "<table>"} {print "<tr>";for(i=1;i<=NF;i++)print "<td>" $i"</td>";print "</tr>"} END{print "</table>"}' >> /var/www/html/memu.html
+echo " <br>  " >> /var/www/html/memu.html
+echo "$line" >> /memdata
 ~
 ~
 
@@ -35,12 +38,61 @@ top -bn1 | grep load | awk '{printf "CPU Load: %.2f\n", $(NF-2)}' >> /var/www/ht
 ~
 ~
 
+
 [root@localhost ~]# crontab -e
 crontab: installing new crontab
 0 * * * * ./disk.sh
 0 * * * * ./mem.sh
 0 * * * * ./cpu.sh
 ~
+
+
+[root@localhost ~]# vi avgdisk.sh
+#!/bin/sh
+filename='/diskdata'
+n=0
+sum=0
+sum2=0
+while read line; do
+# reading each line
+echo "Line No. $n : $line"
+use=$(echo "$line" |tr -s ' ' | cut -d ' ' -f3)
+free=$(echo "$line" |tr -s ' ' | cut -d ' ' -f4)
+sum=$((sum+use))
+sum2=$((sum2+free))
+n=$((n+1))
+done < $filename
+avg=$((sum/n))
+avg2=$((sum2/n))
+echo "the average of used disk  =$avg" >> /var/www/html/disku.html
+echo " <br>  " >> /var/www/html/disku.html
+echo "the average of free disk =$avg2" >> /var/www/html/disku.html
+~
+~
+
+[root@localhost ~]# vi avgmem.sh
+#!/bin/sh
+filename='/memdata'
+n=0
+sum=0
+sum2=0
+while read line; do
+# reading each line
+echo "Line No. $n : $line"
+use=$(echo "$line" |tr -s ' ' | cut -d ' ' -f3)
+free=$(echo "$line" |tr -s ' ' | cut -d ' ' -f4)
+sum=$((sum+use))
+sum2=$((sum2+free))
+n=$((n+1))
+done < $filename
+avg=$((sum/n))
+avg2=$((sum2/n))
+echo "the average of used memorey  =$avg" >> /var/www/html/memu.html
+echo " <br>  " >> /var/www/html/memu.html
+echo "the average of free memorey =$avg2" >> /var/www/html/memu.html
+~
+~
+
 
 
 inside /var/www/html/
@@ -52,6 +104,7 @@ drwxr-xr-x. 2 root root   39 Mar 14 20:02 disk
 -rw-r--r--. 1 root root  193 Mar 14 20:48 index.html
 -rw-r--r--. 1 root root    0 Mar 14 15:12 memu.html
 drwxr-xr-x. 2 root root 4096 Mar 14 00:45 repodata
+
 [root@localhost html]# vi index.html
 <a href="http://172.25.2.153/cpuu.html">CPU Usage </a>
 <br>
