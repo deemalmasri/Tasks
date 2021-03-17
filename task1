@@ -142,6 +142,8 @@ systemctl start mariadb
 systemctl status mariadb
 mysql_secure_installation
 
+iptables -A INPUT -p tcp --dport 3306 -j ACCEPT
+iptables-save
 firewall-cmd --add-port=3306/tcp 
 firewall-cmd --permanent --add-port=3306/tcp
 
