@@ -87,6 +87,7 @@ Part 7: Yum Repo
 [root@localhost ~]# yum install tmux
 [root@localhost ~]# yum install httpd
 [root@localhost ~]# yum install mysql
+ wget http://repo.zabbix.com/zabbix/3.2/ubuntu/pool/main/z/zabbix-release/zabbix-release_3.2-1+xenial_all.deb
 $sudo mkdir /media/local_repo
 $ df
 $sudo mount /dev/sr0 /tmp
